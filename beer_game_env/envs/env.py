@@ -109,7 +109,7 @@ class Agent(object):
 class BeerGame(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, n_agents=4, env_type='classical', n_turns_per_game=100,
+    def __init__(self, n_agents=4, env_type='classical', n_turns_per_game=20,
                  add_noise_initialization=False, seed=None):
         super().__init__()
         c = Config()
@@ -117,7 +117,7 @@ class BeerGame(gym.Env):
         self.config = config
         self.curGame = 0 # The number associated with the current game (counter of the game)
         self.curTime = 0
-        self.m = 1
+        self.m = 9
         self.totIterPlayed = 0  # total iterations of the game, played so far in this and previous games
         self.players = self.createAgent()  # create the agents 
         self.T = 0
@@ -147,7 +147,7 @@ class BeerGame(gym.Env):
 
         self.action_space = gym.spaces.Dict({f"agent{i}": g[i] for i in range(len(g))})
 
-        self.action_space = gym.spaces.Tuple(tuple([gym.spaces.Discrete(61),gym.spaces.Discrete(61),gym.spaces.Discrete(61),gym.spaces.Discrete(5)]))
+        self.action_space = gym.spaces.Tuple(tuple([gym.spaces.Discrete(5),gym.spaces.Discrete(5),gym.spaces.Discrete(5),gym.spaces.Discrete(5)]))
 
 
         #self.action_space = gym.spaces.Tuple(tuple([gym.spaces.Discrete(61)] * 4))
@@ -216,7 +216,7 @@ class BeerGame(gym.Env):
     def planHorizon(self):
       # TLow: minimum number for the planning horizon # TUp: maximum number for the planning horizon
       #output: The planning horizon which is chosen randomly.
-      return random.randint(self.config.TLow,self.config.TUp)
+      return random.randint(self.n_turns, self.n_turns)# self.config.TLow,self.config.TUp)
 
     # this function resets the game for start of the new game
     def resetGame(self, demand, playType):
@@ -326,9 +326,9 @@ class BeerGame(gym.Env):
       for k in range(0,self.config.NoAgent): 
       
         # Set leftmost agent to use DQN, otherwise base-stock
-        if k == 3:
+        if k == 0:
          self.players[k].action = np.zeros(self.config.actionListLenOpt)
-         a = int(max(0, (action[3] - 2) + self.players[k].AO[self.curTime]))
+         a = int(max(0, (action[k] - 2) + self.players[k].AO[self.curTime]))
          self.players[k].action[a] = 1
          #self.players[k].action[action[3]] = 1
          #print("ACTION3: ", action[3])
