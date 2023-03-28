@@ -109,7 +109,7 @@ class Agent(object):
 class BeerGame(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, n_agents=4, env_type='classical', n_turns_per_game=15,
+    def __init__(self, n_agents=4, env_type='classical', n_turns_per_game=16,
                  add_noise_initialization=False, seed=None, test_mode=False):
         super().__init__()
         c = Config()
@@ -122,7 +122,7 @@ class BeerGame(gym.Env):
           self.init_test_demand()
         self.curGame = 1 # The number associated with the current game (counter of the game)
         self.curTime = 0
-        self.m = 9
+        self.m = 10
         self.totIterPlayed = 0  # total iterations of the game, played so far in this and previous games
         self.players = self.createAgent()  # create the agents 
         self.T = 0
@@ -152,7 +152,7 @@ class BeerGame(gym.Env):
 
         self.action_space = gym.spaces.Dict({f"agent{i}": g[i] for i in range(len(g))})
 
-        self.action_space = gym.spaces.Tuple(tuple([gym.spaces.Discrete(5),gym.spaces.Discrete(5),gym.spaces.Discrete(5),gym.spaces.Discrete(5)]))
+        self.action_space = gym.spaces.Tuple(tuple([gym.spaces.Discrete(5),gym.spaces.Discrete(1),gym.spaces.Discrete(1),gym.spaces.Discrete(1)]))
 
 
         #self.action_space = gym.spaces.Tuple(tuple([gym.spaces.Discrete(61)] * 4))
@@ -405,13 +405,15 @@ class BeerGame(gym.Env):
       # set AO
       self.players[0].AO[self.curTime] += self.demand[self.curTime]
       for k in range(0,self.config.NoAgent): 
-       
-        #if k == 0:
-        # self.players[k].action = np.zeros(self.config.actionListLenOpt)
-        # a = int(max(0, (action[k] - 2) + self.players[k].AO[self.curTime]))
-        # self.players[k].action[a] = 1
-        #else:
-        self.getAction(k)
+      
+        if k == 0:
+         self.players[k].action = np.zeros(self.config.actionListLenOpt)
+         a = int(max(0, (action[k] - 2) + self.players[k].AO[self.curTime]))
+         self.players[k].action[a] = 1
+        #  print("ACTION: ")
+        #  print(action[k])
+        else:
+          self.getAction(k)
         
         # self.players[k].srdqnBaseStock += [self.players[k].actionValue( \
         #   self.curTime, self.playType) + self.players[k].IL + self.players[k].OO]
