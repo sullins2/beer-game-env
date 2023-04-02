@@ -118,7 +118,6 @@ class BeerGame(gym.Env):
         # print("TEST MODE: ", test_mode)
         self.test_mode = test_mode
         if self.test_mode:
-          # print("INIT TEST DEMAND")
           self.init_test_demand()
         self.curGame = 1 # The number associated with the current game (counter of the game)
         self.curTime = 0
@@ -134,43 +133,14 @@ class BeerGame(gym.Env):
         self.totalReward = 0
         self.n_agents = n_agents
         self.n_turns = n_turns_per_game
-        seed = 1000
         seed  = random.randint(0,1000000)
         self.seed(seed)
         random.seed(seed)
         np.random.seed(seed)
         self.totalTotal = 0
 
-        # Each agent has actions 0-60
-        #self.action_space = gym.spaces.Tuple(tuple([gym.spaces.Discrete(61)] * 4))
-
-        # Agent 3 has 5 (-2, ..., 2) + AO
-        # Rest have 61
-        #self.action_space = spaces.Discrete(61)
-        #self.action_space = spaces.Discrete(5)
-        g = [gym.spaces.Discrete(5),gym.spaces.Discrete(5),gym.spaces.Discrete(5),gym.spaces.Discrete(5)]
-
-        self.action_space = gym.spaces.Dict({f"agent{i}": g[i] for i in range(len(g))})
-
+        # Agent 0 has 5 (-2, ..., 2) + AO       
         self.action_space = gym.spaces.Tuple(tuple([gym.spaces.Discrete(5),gym.spaces.Discrete(1),gym.spaces.Discrete(1),gym.spaces.Discrete(1)]))
-
-
-        #self.action_space = gym.spaces.Tuple(tuple([gym.spaces.Discrete(61)] * 4))
-
-
-        # This will need to be m=5 (last m observations)
-        # This currently doesn't work for Discrete
-        # spaces = {
-        #   #CHECK IF THESE ARE TOO BIG/SMALL
-        #   # IL
-        #    'current_stock_minus': gym.spaces.Discrete(1000),
-        #    'current_stock_plus': gym.spaces.Discrete(1000),
-        #    # OO
-        #    'OO': gym.spaces.Discrete(200),
-        #    # AS
-        #    'AS': gym.spaces.Discrete(200),
-        #    # AO
-        #    'AO': gym.spaces.Discrete(200),}
 
         # Create observation space = m
         spaces = {}
@@ -191,20 +161,6 @@ class BeerGame(gym.Env):
           deques[f'AS'] = deque([0] * self.m, maxlen=self.m)
           deques[f'AO'] = deque([0] * self.m, maxlen=self.m)
           self.deques.append(deques)
-        # print(self.deques)
-
-        # WORKING
-        # spaces = {
-        #    # IL
-        #    'current_stock_minus': gym.spaces.Box(low=np.array([0.0]), high=np.array([1000.0]), shape=(1,)),
-        #    'current_stock_plus': gym.spaces.Box(low=np.array([0.0]), high=np.array([1000.0]), shape=(1,)),
-        #    # AS
-        #    'OO': gym.spaces.Box(low=np.array([0]), high=np.array([100]), shape=(1,)),
-        #    # OO
-        #    'AS': gym.spaces.Box(low=np.array([0]), high=np.array([3]), shape=(1,)),
-        #    # AO
-        #    'AO': gym.spaces.Box(low=np.array([0]), high=np.array([3]), shape=(1,)),
-        # }
 
         dict_space = gym.spaces.Dict(spaces)
         self.observation_space = gym.spaces.Tuple(tuple([dict_space] * 4))
@@ -231,7 +187,6 @@ class BeerGame(gym.Env):
       self.curGame += 1
       self.totIterPlayed += self.T
       self.T = self.planHorizon() #+ 1 # Hacky but was a problem
-      #print(self.T)
       self.totalReward = 0
       
       self.deques = [] # make this all a function
@@ -275,89 +230,11 @@ class BeerGame(gym.Env):
       else:
         self.players[k].action [np.argmin(np.abs(np.array(self.config.actionListOpt)-\
               max(0,(self.players[k].bsBaseStock - (self.players[k].IL + self.players[k].OO - self.players[k].AO[self.curTime]))) ))] = 1	
-      # if k == 0:
-      #   print("player ", k, " action: ", self.players[k].action)
-      
-    # # next action
-    # def next(self):
-    #   # get a random leadtime		
-    #   leadTimeIn = random.randint(self.config.leadRecItemLow[self.config.NoAgent-1], self.config.leadRecItemUp[self.config.NoAgent-1]) 
-    #   # handle the most upstream recieved shipment
-    #   self.players[self.config.NoAgent-1].AS[self.curTime + leadTimeIn] += self.players[self.config.NoAgent-1].actionValue(self.curTime, self.playType)
-
-    #   for k in range(self.config.NoAgent-1,-1,-1): # [3,2,1,0]
-        
-    #     # get current IL and Backorder
-    #     current_IL = max(0, self.players[k].IL)
-    #     current_backorder = max(0, -self.players[k].IL)
-
-    #     # TODO: We have get the AS and AO from the UI and update our AS and AO, so that code update the corresponding variables
-        
-    #     # increase IL and decrease OO based on the action, for the next period 
-    #     self.players[k].recieveItems(self.curTime)
-        
-    #     # observe the reward
-    #     possible_shipment = min(current_IL + self.players[k].AS[self.curTime], current_backorder + self.players[k].AO[self.curTime])
-        
-    #     # plan arrivals of the items to the downstream agent
-    #     if self.players[k].agentNum > 0:
-    #       leadTimeIn = random.randint(self.config.leadRecItemLow[k-1], self.config.leadRecItemUp[k-1])
-    #       self.players[k-1].AS[self.curTime + leadTimeIn] += possible_shipment
-
-    #     # update IL
-    #     self.players[k].IL -= self.players[k].AO[self.curTime]
-    #     # observe the reward
-    #     self.players[k].getReward()
-    #     self.players[k].totalR += self.players[k].curReward
-
-    #     # update next observation 
-    #     self.players[k].nextObservation = self.players[k].getCurState(self.curTime+1)
-      
-    #   if self.config.ifUseTotalReward: # Default is false
-    #     # correction on cost at time T
-    #     if self.curTime == self.T:
-    #       self.getTotRew()					
-      
-    #   self.curTime +=1				
-
-    # def handelAction(self, action : list):
-    #   # get random lead time 
-    #   leadTime = random.randint(self.config.leadRecOrderLow[0], self.config.leadRecOrderUp[0])
-    #   # set AO
-    #   self.players[0].AO[self.curTime] += self.demand[self.curTime]
-
-    #   #print(action)
-    #   #agent_actions = {f"agent{i}": action[f"agent{i}"] for i in range(self.n_agents)}
-    #   #print(agent_actions)
-    #   for k in range(0,self.config.NoAgent): 
-      
-    #     # Set leftmost agent to use DQN, otherwise base-stock
-    #     if k == 10:
-    #      self.players[k].action = np.zeros(self.config.actionListLenOpt)
-    #      a = int(max(0, (action[k] - 2) + self.players[k].AO[self.curTime]))
-    #      #a = random.randint(0,60) #39
-    #      #a = 0 #3.49
-    #      self.players[k].action[a] = 1
-    #      #self.players[k].action[action[3]] = 1
-    #      #print("ACTION3: ", action[3])
-    #      #self.getAction(k)
-    #     else:
-    #       self.getAction(k) #1.46
-        
-    #     self.players[k].srdqnBaseStock += [self.players[k].actionValue( \
-    #       self.curTime, self.playType) + self.players[k].IL + self.players[k].OO]
-        
-    #     # updates OO and AO at time t+1
-    #     self.players[k].OO += self.players[k].actionValue(self.curTime, self.playType) # open order level update
-    #     leadTime = random.randint(self.config.leadRecOrderLow[k], self.config.leadRecOrderUp[k])
-    #     if self.players[k].agentNum < self.config.NoAgent-1:
-    #       self.players[k+1].AO[self.curTime + leadTime] += self.players[k].actionValue(self.curTime, self.playType) # open order level update
-
-    	# next action
+    
     def next(self):
       # get a random leadtime		
       leadTimeIn = random.randint(self.config.leadRecItemLow[self.config.NoAgent-1], self.config.leadRecItemUp[self.config.NoAgent-1]) 
-      #print(leadTimeIn)
+      
       # handle the most upstream recieved shipment
       self.players[self.config.NoAgent-1].AS[self.curTime + leadTimeIn] += self.players[self.config.NoAgent-1].actionValue(self.curTime, self.playType)
 
@@ -385,7 +262,6 @@ class BeerGame(gym.Env):
         # observe the reward
         self.players[k].getReward()
         rewards = [-1 * self.players[i].curReward for i in range(0, self.config.NoAgent)]
-        #print(rewards)
         
         # update next observation 
         self.players[k].nextObservation = self.players[k].getCurState(self.curTime+1)
@@ -395,13 +271,12 @@ class BeerGame(gym.Env):
         if self.curTime == self.T:
           self.getTotRew()					
 
-      # print("DEMAND: ", self.demand[self.curTime])
       self.curTime +=1				
     
     def handelAction(self, action):
       # get random lead time 
       leadTime = random.randint(self.config.leadRecOrderLow[0], self.config.leadRecOrderUp[0])
-      #print("LEADTIME: ", leadTime)
+
       # set AO
       self.players[0].AO[self.curTime] += self.demand[self.curTime]
       for k in range(0,self.config.NoAgent): 
@@ -410,8 +285,6 @@ class BeerGame(gym.Env):
          self.players[k].action = np.zeros(self.config.actionListLenOpt)
          a = int(max(0, (action[k] - 2) + self.players[k].AO[self.curTime]))
          self.players[k].action[a] = 1
-        #  print("ACTION: ")
-        #  print(action[k])
         else:
           self.getAction(k)
         
@@ -509,6 +382,148 @@ class BeerGame(gym.Env):
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
+
+    
+    # TODO: Incorporate testing here
+    def reset(self):
+        if self.test_mode:
+          demand = self.test_deq.popleft()
+          # Reset test demands for next tests
+          if not self.test_deq:
+            self.init_test_demand()
+        else:
+            demand = [random.randint(0, 2) for _ in range(102)] 
+          
+        # This resets self.deque
+        self.resetGame(demand, "train")
+
+        observations = [None] * self.n_agents
+
+        # This does it again
+        self.deques = []
+        for i in range(self.n_agents):
+          deques = {}
+          deques[f'current_stock_minus'] = deque([0.0] * self.m, maxlen=self.m)
+          deques[f'current_stock_plus'] = deque([0.0] * self.m, maxlen=self.m)
+          deques[f'OO'] = deque([0] * self.m, maxlen=self.m)
+          deques[f'AS'] = deque([0] * self.m, maxlen=self.m)
+          deques[f'AO'] = deque([0] * self.m, maxlen=self.m)
+          self.deques.append(deques)
+            
+        # prepend current observation
+        # get current observation, prepend to deque
+        for i in range(self.n_agents):
+            curState = self.players[i].getCurState(self.curTime)
+            self.deques[i]['current_stock_minus'].appendleft(int(curState[0]))
+            self.deques[i]['current_stock_plus'].appendleft(int(curState[1]))
+            self.deques[i]['OO'].appendleft(int(curState[2]))
+            self.deques[i]['AS'].appendleft(int(curState[3]))
+            self.deques[i]['AO'].appendleft(int(curState[4]))
+
+        # return entire m observations
+        for i in range(self.n_agents):
+          spaces = {}
+          for j in range(self.m):
+              spaces[f'current_stock_minus{j}'] = self.deques[i]['current_stock_minus'][j]
+              spaces[f'current_stock_plus{j}'] = self.deques[i]['current_stock_plus'][j]
+              spaces[f'OO{j}'] = self.deques[i]['OO'][j]
+              spaces[f'AS{j}'] = self.deques[i]['AS'][j]
+              spaces[f'AO{j}'] = self.deques[i]['AO'][j]
+          
+          observations[i] = spaces
+      
+        return observations #self._get_observations()
+
+    def render(self, mode='human'):
+        if mode != 'human':
+            raise NotImplementedError(f'Render mode {mode} is not implemented yet')
+        print("")
+        # print('\n' + '=' * 20)
+        # print('Turn:     ', self.turn)
+        # print('Stocks:   ', ", ".join([str(x) for x in self.stocks]))
+        # print('Orders:   ', [list(x) for x in self.orders])
+        # print('Shipments:', [list(x) for x in self.shipments])
+        # print('Last incoming orders:  ', self.next_incoming_orders)
+        # print('Cum holding cost:  ', self.cum_stockout_cost)
+        # print('Cum stockout cost: ', self.cum_holding_cost)
+        # print('Last holding cost: ', self.holding_cost)
+        # print('Last stockout cost:', self.stockout_cost)
+
+    def step(self, action: list):
+        # sanity checks
+        # if self.done:
+        #     raise error.ResetNeeded('Environment is finished, please run env.reset() before taking actions')
+        if get_init_len(action) != self.n_agents:
+            raise error.InvalidAction(f'Length of action array must be same as n_agents({self.n_agents})')
+        if any(np.array(action) < 0):
+            raise error.InvalidAction(f"You can't order negative amount. You agents actions are: {action}")
+        
+        self.handelAction(action)
+        self.next()
+           
+        if self.curTime == self.T+1:
+            
+            for i in range(self.n_agents):
+              self.players[i].getReward()
+            rewards = [-1*self.players[i].curReward for i in range(0,self.config.NoAgent)]
+            self.done = [True] * 4
+          
+            # get current observation, prepend to deque
+            for i in range(self.n_agents):
+                curState = self.players[i].getCurState(self.curTime)
+                self.deques[i]['current_stock_minus'].appendleft(int(curState[0]))
+                self.deques[i]['current_stock_plus'].appendleft(int(curState[1]))
+                self.deques[i]['OO'].appendleft(int(curState[2]))
+                self.deques[i]['AS'].appendleft(int(curState[3]))
+                self.deques[i]['AO'].appendleft(int(curState[4]))
+
+            # return entire m observations
+            observations = [None] * self.n_agents
+            for i in range(self.n_agents):
+              spaces = {}
+              for j in range(self.m):
+                  spaces[f'current_stock_minus{j}'] = self.deques[i]['current_stock_minus'][j]
+                  spaces[f'current_stock_plus{j}'] = self.deques[i]['current_stock_plus'][j]
+                  spaces[f'OO{j}'] = self.deques[i]['OO'][j]
+                  spaces[f'AS{j}'] = self.deques[i]['AS'][j]
+                  spaces[f'AO{j}'] = self.deques[i]['AO'][j]
+              
+              observations[i] = spaces          
+            
+            state = observations #self._get_observations()
+            return state, rewards, self.done, {}
+        else:
+            
+            # get current observation, prepend to deque
+            for i in range(self.n_agents):
+                curState = self.players[i].getCurState(self.curTime)
+                self.deques[i]['current_stock_minus'].appendleft(int(curState[0]))
+                self.deques[i]['current_stock_plus'].appendleft(int(curState[1]))
+                self.deques[i]['OO'].appendleft(int(curState[2]))
+                self.deques[i]['AS'].appendleft(int(curState[3]))
+                self.deques[i]['AO'].appendleft(int(curState[4]))
+                     
+            # # return entire m observations
+            observations = [None] * self.n_agents
+            for i in range(self.n_agents):
+              spaces = {}
+              for j in range(self.m):
+                  spaces[f'current_stock_minus{j}'] = self.deques[i]['current_stock_minus'][j]
+                  spaces[f'current_stock_plus{j}'] = self.deques[i]['current_stock_plus'][j]
+                  spaces[f'OO{j}'] = self.deques[i]['OO'][j]
+                  spaces[f'AS{j}'] = self.deques[i]['AS'][j]
+                  spaces[f'AO{j}'] = self.deques[i]['AO'][j]
+              
+              observations[i] = spaces
+
+            for i in range(self.n_agents):
+              self.players[i].getReward()
+            rewards = [-1*self.players[i].curReward for i in range(0,self.config.NoAgent)]
+            self.done = [False] * 4
+            state = observations #self._get_observations()
+            # todo flatten observation dict
+            #state = FlattenObservation(state)
+            return state, rewards, self.done, {}
 
     def init_test_demand(self):
       self.test_deq = deque()
@@ -713,159 +728,7 @@ class BeerGame(gym.Env):
 ,1,0,0,2,1,2,1,0,1,2,0,1,1,0,0,0,1,0,2,0,2,1,1,1,0,0,0,0]
       self.test_deq.append(demand)
 
-    # TODO: Incorporate testing here
-    def reset(self):
-        #demand = [random.randint(0, 2) for _ in range(102)] 
-        # print("TEST: ", test)
-        # print("CURGAME: ", self.curGame)
-        if self.test_mode:
-          demand = self.test_deq.popleft()
-          # print("DOING DEMAND: CURGAME: ", self.curGame)
-          # print(demand)
-          if not self.test_deq:
-            # print("RESET INIT TEST DEMAND")
-            self.init_test_demand()
-        else:
-            demand = [random.randint(0, 2) for _ in range(102)] 
-          
-        # This resets self.deque
-        self.resetGame(demand, "train")
 
-        observations = [None] * self.n_agents
-        # get current observation, prepend to deque
-
-        # This does it again
-        self.deques = []
-        for i in range(self.n_agents):
-          deques = {}
-          deques[f'current_stock_minus'] = deque([0.0] * self.m, maxlen=self.m)
-          deques[f'current_stock_plus'] = deque([0.0] * self.m, maxlen=self.m)
-          deques[f'OO'] = deque([0] * self.m, maxlen=self.m)
-          deques[f'AS'] = deque([0] * self.m, maxlen=self.m)
-          deques[f'AO'] = deque([0] * self.m, maxlen=self.m)
-          self.deques.append(deques)
-            
-        # prepend current observation
-        # get current observation, prepend to deque
-        for i in range(self.n_agents):
-            curState = self.players[i].getCurState(self.curTime)
-            self.deques[i]['current_stock_minus'].appendleft(int(curState[0]))
-            self.deques[i]['current_stock_plus'].appendleft(int(curState[1]))
-            self.deques[i]['OO'].appendleft(int(curState[2]))
-            self.deques[i]['AS'].appendleft(int(curState[3]))
-            self.deques[i]['AO'].appendleft(int(curState[4]))
-
-        # return entire m observations
-        for i in range(self.n_agents):
-          spaces = {}
-          for j in range(self.m):
-              spaces[f'current_stock_minus{j}'] = self.deques[i]['current_stock_minus'][j]
-              spaces[f'current_stock_plus{j}'] = self.deques[i]['current_stock_plus'][j]
-              spaces[f'OO{j}'] = self.deques[i]['OO'][j]
-              spaces[f'AS{j}'] = self.deques[i]['AS'][j]
-              spaces[f'AO{j}'] = self.deques[i]['AO'][j]
-          
-          observations[i] = spaces
-      
-        return observations #self._get_observations()
-
-    def render(self, mode='human'):
-        if mode != 'human':
-            raise NotImplementedError(f'Render mode {mode} is not implemented yet')
-        print("")
-        # print('\n' + '=' * 20)
-        # print('Turn:     ', self.turn)
-        # print('Stocks:   ', ", ".join([str(x) for x in self.stocks]))
-        # print('Orders:   ', [list(x) for x in self.orders])
-        # print('Shipments:', [list(x) for x in self.shipments])
-        # print('Last incoming orders:  ', self.next_incoming_orders)
-        # print('Cum holding cost:  ', self.cum_stockout_cost)
-        # print('Cum stockout cost: ', self.cum_holding_cost)
-        # print('Last holding cost: ', self.holding_cost)
-        # print('Last stockout cost:', self.stockout_cost)
-
-    def step(self, action: list):
-        # sanity checks
-        # if self.done:
-        #     raise error.ResetNeeded('Environment is finished, please run env.reset() before taking actions')
-        if get_init_len(action) != self.n_agents:
-            raise error.InvalidAction(f'Length of action array must be same as n_agents({self.n_agents})')
-        if any(np.array(action) < 0):
-            raise error.InvalidAction(f"You can't order negative amount. You agents actions are: {action}")
-        
-        # print("DEMAND: ", self.demand[self.curTime])
-        self.handelAction(action)
-        self.next()
-           
-
-        if self.curTime == self.T+1:
-            
-            for i in range(self.n_agents):
-              self.players[i].getReward()
-            rewards = [-1*self.players[i].curReward for i in range(0,self.config.NoAgent)]
-            #rewards = sum(rewards)
-            #rewards = self.totalReward
-            self.done = [True] * 4
-            #obs = self.reset()
-            
-            
-            # get current observation, prepend to deque
-            for i in range(self.n_agents):
-                curState = self.players[i].getCurState(self.curTime)
-                self.deques[i]['current_stock_minus'].appendleft(int(curState[0]))
-                self.deques[i]['current_stock_plus'].appendleft(int(curState[1]))
-                self.deques[i]['OO'].appendleft(int(curState[2]))
-                self.deques[i]['AS'].appendleft(int(curState[3]))
-                self.deques[i]['AO'].appendleft(int(curState[4]))
-
-            # return entire m observations
-            observations = [None] * self.n_agents
-            for i in range(self.n_agents):
-              spaces = {}
-              for j in range(self.m):
-                  spaces[f'current_stock_minus{j}'] = self.deques[i]['current_stock_minus'][j]
-                  spaces[f'current_stock_plus{j}'] = self.deques[i]['current_stock_plus'][j]
-                  spaces[f'OO{j}'] = self.deques[i]['OO'][j]
-                  spaces[f'AS{j}'] = self.deques[i]['AS'][j]
-                  spaces[f'AO{j}'] = self.deques[i]['AO'][j]
-              
-              observations[i] = spaces          
-            
-            state = observations #self._get_observations()
-            return state, rewards, self.done, {}
-        else:
-            
-            # get current observation, prepend to deque
-            for i in range(self.n_agents):
-                curState = self.players[i].getCurState(self.curTime)
-                self.deques[i]['current_stock_minus'].appendleft(int(curState[0]))
-                self.deques[i]['current_stock_plus'].appendleft(int(curState[1]))
-                self.deques[i]['OO'].appendleft(int(curState[2]))
-                self.deques[i]['AS'].appendleft(int(curState[3]))
-                self.deques[i]['AO'].appendleft(int(curState[4]))
-                     
-            # # return entire m observations
-            observations = [None] * self.n_agents
-            for i in range(self.n_agents):
-              spaces = {}
-              for j in range(self.m):
-                  spaces[f'current_stock_minus{j}'] = self.deques[i]['current_stock_minus'][j]
-                  spaces[f'current_stock_plus{j}'] = self.deques[i]['current_stock_plus'][j]
-                  spaces[f'OO{j}'] = self.deques[i]['OO'][j]
-                  spaces[f'AS{j}'] = self.deques[i]['AS'][j]
-                  spaces[f'AO{j}'] = self.deques[i]['AO'][j]
-              
-              observations[i] = spaces
-
-            for i in range(self.n_agents):
-              self.players[i].getReward()
-            rewards = [-1*self.players[i].curReward for i in range(0,self.config.NoAgent)]
-            # print(rewards)
-            self.done = [False] * 4
-            state = observations #self._get_observations()
-            # todo flatten observation dict
-            #state = FlattenObservation(state)
-            return state, rewards, self.done, {}
 
 def get_init_len(init):
     """
