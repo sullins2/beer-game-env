@@ -140,7 +140,7 @@ class BeerGame(gym.Env):
         self.totalTotal = 0
 
         # Agent 0 has 5 (-2, ..., 2) + AO       
-        self.action_space = gym.spaces.Tuple(tuple([gym.spaces.Discrete(5),gym.spaces.Discrete(1),gym.spaces.Discrete(1),gym.spaces.Discrete(1)]))
+        self.action_space = gym.spaces.Tuple(tuple([gym.spaces.Discrete(5),gym.spaces.Discrete(5),gym.spaces.Discrete(5),gym.spaces.Discrete(5)]))
 
         # Create observation space = m
         spaces = {}
@@ -281,12 +281,12 @@ class BeerGame(gym.Env):
       self.players[0].AO[self.curTime] += self.demand[self.curTime]
       for k in range(0,self.config.NoAgent): 
       
-        if k == 0:
-         self.players[k].action = np.zeros(self.config.actionListLenOpt)
-         a = int(max(0, (action[k] - 2) + self.players[k].AO[self.curTime]))
-         self.players[k].action[a] = 1
-        else:
-          self.getAction(k)
+        #if k == 0:
+        self.players[k].action = np.zeros(self.config.actionListLenOpt)
+        a = int(max(0, (action[k] - 2) + self.players[k].AO[self.curTime]))
+        self.players[k].action[a] = 1
+        #else:
+        #  self.getAction(k)
         
         # self.players[k].srdqnBaseStock += [self.players[k].actionValue( \
         #   self.curTime, self.playType) + self.players[k].IL + self.players[k].OO]
