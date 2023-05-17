@@ -388,8 +388,8 @@ class BeerGame(gym.Env):
           if not self.test_deq:
             self.init_test_demand()
         else:
-	    self.init_test_demand() # added so that it resets for next test without commenting out unused that will be left over
-            demand = [random.randint(0, 2) for _ in range(102)] 
+          self.init_test_demand() # added so that it resets for next test without commenting out unused that will be left over
+          demand = [random.randint(0, 2) for _ in range(102)] 
           
         # This resets self.deque
         self.resetGame(demand, "train")
