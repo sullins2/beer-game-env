@@ -105,7 +105,7 @@ class Agent(object):
 class BeerGame(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, n_agents=4, env_type='classical', n_turns_per_game=100,
+    def __init__(self, n_agents=4, env_type='classical', n_turns_per_game=50,
                  add_noise_initialization=False, seed=None, test_mode=False):
         super().__init__()
         c = Config()
@@ -128,7 +128,10 @@ class BeerGame(gym.Env):
         self.totRew = 0    # it is reward of all players obtained for the current player.
         self.totalReward = 0
         self.n_agents = n_agents
-        self.n_turns = n_turns_per_game
+        if test_mode == False:
+          self.n_turns = n_turns_per_game
+        else:
+          self.n_turns = 20
         seed  = random.randint(0,1000000)
         self.seed(seed)
         random.seed(seed)
@@ -277,7 +280,7 @@ class BeerGame(gym.Env):
       self.players[0].AO[self.curTime] += self.demand[self.curTime]
       for k in range(0,self.config.NoAgent): 
       
-        if k == 3:
+        if k == 0:
           self.players[k].action = np.zeros(self.config.actionListLenOpt)
           a = int(max(0, (action[k] - 2) + self.players[k].AO[self.curTime]))
           self.players[k].action[a] = 1
@@ -384,8 +387,10 @@ class BeerGame(gym.Env):
     def reset(self):
         if self.test_mode:
           demand = self.test_deq.popleft()
+          # print("test")
           # Reset test demands for next tests
           if not self.test_deq:
+            # print("reset")
             self.init_test_demand()
         else:
           #self.init_test_demand() # added so that it resets for next test without commenting out unused that will be left over
