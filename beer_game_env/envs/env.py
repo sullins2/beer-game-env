@@ -105,7 +105,7 @@ class Agent(object):
 class BeerGame(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, n_agents=4, env_type='classical', n_turns_per_game=75,
+    def __init__(self, n_agents=4, env_type='classical', n_turns_per_game=100,
                  add_noise_initialization=False, seed=None, test_mode=False):
         super().__init__()
         c = Config()
@@ -131,7 +131,7 @@ class BeerGame(gym.Env):
         if test_mode == False:
           self.n_turns = n_turns_per_game
         else:
-          self.n_turns = 20
+          self.n_turns = n_turns_per_game
         seed  = random.randint(0,1000000)
         self.seed(seed)
         random.seed(seed)
