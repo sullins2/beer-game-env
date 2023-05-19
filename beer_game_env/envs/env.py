@@ -105,7 +105,7 @@ class Agent(object):
 class BeerGame(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, n_agents=4, env_type='classical', n_turns_per_game=20,
+    def __init__(self, n_agents=4, env_type='classical', n_turns_per_game=75,
                  add_noise_initialization=False, seed=None, test_mode=False):
         super().__init__()
         c = Config()
