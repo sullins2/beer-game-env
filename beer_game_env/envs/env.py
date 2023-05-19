@@ -105,7 +105,7 @@ class Agent(object):
 class BeerGame(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, n_agents=4, env_type='classical', n_turns_per_game=50,
+    def __init__(self, n_agents=4, env_type='classical', n_turns_per_game=20,
                  add_noise_initialization=False, seed=None, test_mode=False):
         super().__init__()
         c = Config()
@@ -117,7 +117,7 @@ class BeerGame(gym.Env):
           self.init_test_demand()
         self.curGame = 1 # The number associated with the current game (counter of the game)
         self.curTime = 0
-        self.m = 10
+        self.m = 8
         self.totIterPlayed = 0  # total iterations of the game, played so far in this and previous games
         self.players = self.createAgent()  # create the agents 
         self.T = 0
