@@ -117,7 +117,7 @@ class BeerGame(gym.Env):
           self.init_test_demand()
         self.curGame = 1 # The number associated with the current game (counter of the game)
         self.curTime = 0
-        self.m = 8
+        self.m = 10
         self.totIterPlayed = 0  # total iterations of the game, played so far in this and previous games
         self.players = self.createAgent()  # create the agents 
         self.T = 0
@@ -144,8 +144,8 @@ class BeerGame(gym.Env):
         # Create observation space = m
         spaces = {}
         for i in range(self.m):
-            spaces[f'current_stock_minus{i}'] = gym.spaces.Box(low=np.array([0.0]), high=np.array([300]), shape=(1,))
-            spaces[f'current_stock_plus{i}'] = gym.spaces.Box(low=np.array([0.0]), high=np.array([300]), shape=(1,))
+            spaces[f'current_stock_minus{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([300]), shape=(1,))
+            spaces[f'current_stock_plus{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([300]), shape=(1,))
             spaces[f'OO{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([40]), shape=(1,))
             spaces[f'AS{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([3]), shape=(1,))
             spaces[f'AO{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([3]), shape=(1,))
@@ -387,6 +387,7 @@ class BeerGame(gym.Env):
     def reset(self):
         if self.test_mode:
           demand = self.test_deq.popleft()
+          # print("Test:", demand)
           # print("test")
           # Reset test demands for next tests
           if not self.test_deq:
