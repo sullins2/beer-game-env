@@ -144,8 +144,8 @@ class BeerGame(gym.Env):
         # Create observation space = m
         spaces = {}
         for i in range(self.m):
-            spaces[f'current_stock_minus{i}'] = gym.spaces.Box(low=np.array([0.0]), high=np.array([300.0]), shape=(1,))
-            spaces[f'current_stock_plus{i}'] = gym.spaces.Box(low=np.array([0.0]), high=np.array([300.0]), shape=(1,))
+            spaces[f'current_stock_minus{i}'] = gym.spaces.Box(low=np.array([0.0]), high=np.array([300]), shape=(1,))
+            spaces[f'current_stock_plus{i}'] = gym.spaces.Box(low=np.array([0.0]), high=np.array([300]), shape=(1,))
             spaces[f'OO{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([40]), shape=(1,))
             spaces[f'AS{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([3]), shape=(1,))
             spaces[f'AO{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([3]), shape=(1,))
