@@ -105,7 +105,7 @@ class Agent(object):
 class BeerGame(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, n_agents=4, env_type='classical', n_turns_per_game=30,
+    def __init__(self, n_agents=4, env_type='classical', n_turns_per_game=100,
                  add_noise_initialization=False, seed=None, test_mode=False):
         super().__init__()
         c = Config()
@@ -144,9 +144,9 @@ class BeerGame(gym.Env):
         # Create observation space = m
         spaces = {}
         for i in range(self.m):
-            spaces[f'current_stock_minus{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([300]), shape=(1,))
-            spaces[f'current_stock_plus{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([300]), shape=(1,))
-            spaces[f'OO{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([40]), shape=(1,))
+            spaces[f'current_stock_minus{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([200]), shape=(1,))
+            spaces[f'current_stock_plus{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([200]), shape=(1,))
+            spaces[f'OO{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([30]), shape=(1,))
             spaces[f'AS{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([3]), shape=(1,))
             spaces[f'AO{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([3]), shape=(1,))
         
