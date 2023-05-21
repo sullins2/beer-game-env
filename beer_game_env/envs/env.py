@@ -144,9 +144,9 @@ class BeerGame(gym.Env):
         # Create observation space = m
         spaces = {}
         for i in range(self.m):
-            spaces[f'current_stock_minus{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([200]), shape=(1,))
-            spaces[f'current_stock_plus{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([200]), shape=(1,))
-            spaces[f'OO{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([30]), shape=(1,))
+            spaces[f'current_stock_minus{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([300]), shape=(1,))
+            spaces[f'current_stock_plus{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([300]), shape=(1,))
+            spaces[f'OO{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([40]), shape=(1,))
             spaces[f'AS{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([3]), shape=(1,))
             spaces[f'AO{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([3]), shape=(1,))
         
@@ -218,7 +218,8 @@ class BeerGame(gym.Env):
 
     def getAction(self, k):
       self.players[k].action = np.zeros(self.config.actionListLenOpt)
-				
+      
+      # print(self.players[k].action)	
       if self.config.demandDistribution == 2:
         if self.curTime   and self.config.use_initial_BS <= 4:
           self.players[k].action [np.argmin(np.abs(np.array(self.config.actionListOpt)-\
@@ -229,7 +230,9 @@ class BeerGame(gym.Env):
       else:
         self.players[k].action [np.argmin(np.abs(np.array(self.config.actionListOpt)-\
               max(0,(self.players[k].bsBaseStock - (self.players[k].IL + self.players[k].OO - self.players[k].AO[self.curTime]))) ))] = 1	
-    
+      # print(self.players[k].action)	
+
+
     def next(self):
       # get a random leadtime		
       leadTimeIn = random.randint(self.config.leadRecItemLow[self.config.NoAgent-1], self.config.leadRecItemUp[self.config.NoAgent-1]) 
@@ -281,7 +284,7 @@ class BeerGame(gym.Env):
       for k in range(0,self.config.NoAgent): 
       
         if k == 0:
-          self.players[k].action = np.zeros(self.config.actionListLenOpt)
+          self.players[k].action = np.zeros(5)#self.config.actionListLenOpt)
           a = int(max(0, (action[k] - 2) + self.players[k].AO[self.curTime]))
           self.players[k].action[a] = 1
         else:
