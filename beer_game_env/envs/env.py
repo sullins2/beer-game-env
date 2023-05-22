@@ -144,11 +144,11 @@ class BeerGame(gym.Env):
         # Create observation space = m
         spaces = {}
         for i in range(self.m):
-            spaces[f'current_stock_minus{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([300]), shape=(1,))
-            spaces[f'current_stock_plus{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([300]), shape=(1,))
-            spaces[f'OO{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([40]), shape=(1,))
-            spaces[f'AS{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([3]), shape=(1,))
-            spaces[f'AO{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([3]), shape=(1,))
+            spaces[f'current_stock_minus{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([30]), shape=(1,))
+            spaces[f'current_stock_plus{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([30]), shape=(1,))
+            spaces[f'OO{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([20]), shape=(1,))
+            spaces[f'AS{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([5]), shape=(1,))
+            spaces[f'AO{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([5]), shape=(1,))
         
         # print(spaces)
         self.deques = []
@@ -471,7 +471,7 @@ class BeerGame(gym.Env):
             
             for i in range(self.n_agents):
               self.players[i].getReward()
-            rewards = [-1*self.players[i].curReward for i in range(0,self.config.NoAgent)]
+            rewards = [1*self.players[i].curReward for i in range(0,self.config.NoAgent)]
             self.done = [True] * 4
           
             # get current observation, prepend to deque
@@ -508,7 +508,8 @@ class BeerGame(gym.Env):
                 self.deques[i]['OO'].appendleft(int(curState[2]))
                 self.deques[i]['AS'].appendleft(int(curState[3]))
                 self.deques[i]['AO'].appendleft(int(curState[4]))
-                     
+            
+            # print(curState[0],curState[1],curState[2],curState[3],curState[4])
             # # return entire m observations
             observations = [None] * self.n_agents
             for i in range(self.n_agents):
@@ -524,7 +525,7 @@ class BeerGame(gym.Env):
 
             for i in range(self.n_agents):
               self.players[i].getReward()
-            rewards = [-1*self.players[i].curReward for i in range(0,self.config.NoAgent)]
+            rewards = [1*self.players[i].curReward for i in range(0,self.config.NoAgent)]
             self.done = [False] * 4
             state = observations #self._get_observations()
             # todo flatten observation dict
