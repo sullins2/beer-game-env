@@ -10,6 +10,7 @@ from gym.wrappers import FilterObservation
 import random
 
 from numpy.core.multiarray import datetime_as_string
+from numpy.core.numeric import ones
 
 # Here we want to define the agent class for the BeerGame
 class Agent(object):
@@ -161,19 +162,36 @@ class BeerGame(gym.Env):
         #     spaces[f'AS{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([5]), shape=(1,))
         #     spaces[f'AO{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([5]), shape=(1,))
         
-        # print(spaces)
-        self.deques = []
-        for i in range(self.n_agents):
-          deques = {}
-          deques[f'current_stock_minus'] = deque([0.0] * self.m, maxlen=self.m)
-          deques[f'current_stock_plus'] = deque([0.0] * self.m, maxlen=self.m)
-          deques[f'OO'] = deque([0] * self.m, maxlen=self.m)
-          deques[f'AS'] = deque([0] * self.m, maxlen=self.m)
-          deques[f'AO'] = deque([0] * self.m, maxlen=self.m)
-          self.deques.append(deques)
+        # Create observation space = m
+        ob_spaces = {}
+        for i in range(self.m):
+            ob_spaces[f'current_stock_minus{i}'] = spaces.Discrete(5)
+            ob_spaces[f'current_stock_plus{i}'] = spaces.Discrete(5)
+            ob_spaces[f'OO{i}'] = spaces.Discrete(5)
+            ob_spaces[f'AS{i}'] = spaces.Discrete(5)
+            ob_spaces[f'AO{i}'] = spaces.Discrete(5)
+        
 
-        # dict_space = gym.spaces.Dict(spaces)
+        # print(spaces)
+        # self.deques = []
+        # for i in range(self.n_agents):
+        #   deques = {}
+        #   deques[f'current_stock_minus'] = deque([0.0] * self.m, maxlen=self.m)
+        #   deques[f'current_stock_plus'] = deque([0.0] * self.m, maxlen=self.m)
+        #   deques[f'OO'] = deque([0] * self.m, maxlen=self.m)
+        #   deques[f'AS'] = deque([0] * self.m, maxlen=self.m)
+        #   deques[f'AO'] = deque([0] * self.m, maxlen=self.m)
+        #   self.deques.append(deques)
+
+        # dict_space = gym.spaces.Dict(ob_spaces)
         # self.observation_space = gym.spaces.Tuple(tuple([dict_space] * 4))
+        x = [50, 50, 10, 5, 5]
+        oob = []
+        for _ in range(self.m):
+          for ii in range(len(x)):
+            oob.append(x[ii])
+        self.observation_space = gym.spaces.Tuple(tuple([spaces.MultiDiscrete(oob)] * 4))
+
         # obs_space = [30 for _ in range(self.m*5*4)]
         # obs_space = [(0, 30) for _ in range(self.m*5*4)]
         # obs_space = []
@@ -187,14 +205,56 @@ class BeerGame(gym.Env):
         # self.observation_space = gym.spaces.Tuple(tuple([f]*self.m*5) * 4)
         # low = np.array([-5, -5, -5, -5, -5])
         # high = -np.array([-5, -5, -5, -5, -5])
-        low = np.zeros(5 * self.m)
-        high = np.ones(5 * self.m)*100
-        print(low)
-        print(high)
-        self.observation_space = gym.spaces.Tuple([gym.spaces.Box(low, high, dtype=np.float32)]*4)
+        # low = np.zeros(5 * self.m)
+        # high = np.ones(5 * self.m)*100
+        # print(low)
+        # print(high)
+        # r = [gym.spaces.Discrete(100),gym.spaces.Discrete(100),gym.spaces.Discrete(100),gym.spaces.Discrete(100),gym.spaces.Discrete(100)]
+        # self.observation_space = gym.spaces.Tuple([gym.spaces.Box(low, high, dtype=np.float32)]*4)
+        # self.observation_space = []
+        # for ii in range(4):
+        #   self.observation_space.append(r)
+        # self.observation_space = gym.spaces.Tuple(tuple(self.observation_space))
+        # self.observation_space = r*4
+        # os = gym.spaces.MultiDiscrete([100,100,100,100,100])
+        # self.observation_space = gym.spaces.Tuple(tuple([os] * 4))
+        
+        # x = [gym.spaces.Discrete(5),
+        #                       gym.spaces.Discrete(5),
+        #                       gym.spaces.Discrete(5),
+        #                       gym.spaces.Discrete(5),
+        #                       gym.spaces.Discrete(5)]
+        # x = []
+        # for _ in range(1):
+        #   for _ in range(5):
+        #     x.append(gym.spaces.Discrete(30))
+
+
+        # # self.observation_space = gym.spaces.Tuple(tuple([self._get_ob()] * 4))
+        # self.observation_space = gym.spaces.Tuple(x * 4)
+
+        # self.observation_space = gym.spaces.Tuple(tuple([self._get_ob] * 4))
+
+        # sa_action_space = [100, 100, 10, 10, 10]
+        # if len(sa_action_space) == 1:
+        #     sa_action_space = spaces.Discrete(sa_action_space[0])
+        # else:
+        #     sa_action_space = spaces.MultiDiscrete(sa_action_space)
+        # self.observation_space = spaces.Tuple(spaces.Discrete(5)) #spaces.Tuple(tuple(4 * [sa_action_space]))
+        # self._obs_length = 5
+
+
+        # self.observation_space = [spaces.MultiDiscrete([100,100,11,11,11]),spaces.MultiDiscrete([100,100,11,11,11]),spaces.MultiDiscrete([100,100,11,11,11]),spaces.MultiDiscrete([100,100,11,11,11])]
         print("OBS SPACE")
         print(self.observation_space)
         # print(obs_space)
+
+    def _get_ob(self):
+      obs = []
+      for _ in range(5):
+        obs.append(spaces.Discrete(101))  # Values from 0 to 100 (inclusive)
+      return obs
+      # return gym.spaces.Tuple([gym.spaces.Discrete(100),gym.spaces.Discrete(100),gym.spaces.Discrete(100),gym.spaces.Discrete(100),gym.spaces.Discrete(100)])
 
     # createAgent : Create agent objects (agentNum,IL,OO,c_h,c_p,type,config)
     def createAgent(self): 	
@@ -485,7 +545,9 @@ class BeerGame(gym.Env):
           
           observations[i] = spaces
       
-        return obs#observations #self._get_observations()
+        obs_array = np.array([np.array(row) for row in obs])
+        # print("E",obs_array)
+        return obs_array#observations #self._get_observations()
 
     def render(self, mode='human'):
         if mode != 'human':
@@ -549,7 +611,8 @@ class BeerGame(gym.Env):
               
               observations[i] = spaces          
             
-            state = obs#observations #self._get_observations()
+            obs_array = np.array([np.array(row) for row in obs])
+            state = obs_array#observations #self._get_observations()
             return state, rewards, self.done, {}
         else:
             
@@ -587,7 +650,8 @@ class BeerGame(gym.Env):
             rewards = [1*self.players[i].curReward for i in range(0,self.config.NoAgent)]
             self.done = [False] * 4
             # print(obs, self.test_mode)
-            state = obs#observations #self._get_observations()
+            obs_array = np.array([np.array(row) for row in obs])
+            state = obs_array#observations #self._get_observations()
             # todo flatten observation dict
             #state = FlattenObservation(state)
             return state, rewards, self.done, {}
