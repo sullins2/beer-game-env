@@ -188,7 +188,7 @@ class BeerGame(gym.Env):
         # low = np.array([-5, -5, -5, -5, -5])
         # high = -np.array([-5, -5, -5, -5, -5])
         low = np.zeros(5 * self.m)
-        high = np.ones(5 * self.m)*30
+        high = np.ones(5 * self.m)*100
         print(low)
         print(high)
         self.observation_space = gym.spaces.Tuple([gym.spaces.Box(low, high, dtype=np.float32)]*4)
