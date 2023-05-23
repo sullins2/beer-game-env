@@ -1,3 +1,4 @@
+from pickle import FALSE
 import cloudpickle
 import gym
 from gym import error, spaces
@@ -69,8 +70,18 @@ class Agent(object):
 		
 	
 	# find action Value associated with the action list
-  def actionValue(self,curTime,playType):
-    a = max(0, self.config.actionListOpt[np.argmax(self.action)])
+  def actionValue(self,curTime,playType, BS):
+    
+    if not BS:
+      actionList = [-2,-1,0,1,2]
+    else:
+      actionList = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60]
+    
+    if not BS: #SRDQN
+      a = max(0,actionList[np.argmax(self.action)] + self.AO[curTime])
+    else:
+      a = max(0,actionList[np.argmax(self.action)])
+    
     return a
 			
   # getReward returns the reward at the current state 
@@ -142,13 +153,13 @@ class BeerGame(gym.Env):
         self.action_space = gym.spaces.Tuple(tuple([gym.spaces.Discrete(5),gym.spaces.Discrete(5),gym.spaces.Discrete(5),gym.spaces.Discrete(5)]))
 
         # Create observation space = m
-        spaces = {}
-        for i in range(self.m):
-            spaces[f'current_stock_minus{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([30]), shape=(1,))
-            spaces[f'current_stock_plus{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([30]), shape=(1,))
-            spaces[f'OO{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([20]), shape=(1,))
-            spaces[f'AS{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([5]), shape=(1,))
-            spaces[f'AO{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([5]), shape=(1,))
+        # spaces = {}
+        # for i in range(self.m):
+        #     spaces[f'current_stock_minus{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([30]), shape=(1,))
+        #     spaces[f'current_stock_plus{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([30]), shape=(1,))
+        #     spaces[f'OO{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([20]), shape=(1,))
+        #     spaces[f'AS{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([5]), shape=(1,))
+        #     spaces[f'AO{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([5]), shape=(1,))
         
         # print(spaces)
         self.deques = []
@@ -161,9 +172,29 @@ class BeerGame(gym.Env):
           deques[f'AO'] = deque([0] * self.m, maxlen=self.m)
           self.deques.append(deques)
 
-        dict_space = gym.spaces.Dict(spaces)
-        self.observation_space = gym.spaces.Tuple(tuple([dict_space] * 4))
-
+        # dict_space = gym.spaces.Dict(spaces)
+        # self.observation_space = gym.spaces.Tuple(tuple([dict_space] * 4))
+        # obs_space = [30 for _ in range(self.m*5*4)]
+        # obs_space = [(0, 30) for _ in range(self.m*5*4)]
+        # obs_space = []
+        # for x in range(self.m*5):
+        #   obs_space.append(gym.spaces.Discrete(30))
+        # self.observation_space = gym.spaces.Tuple(tuple([obs_space,obs_space,obs_space,obs_space]))
+        # spaces.MultiDiscrete([30,30,30,30,30])
+        # self.observation_space = gym.spaces.Tuple(tuple([gym.spaces.Discrete(5),gym.spaces.Discrete(5),gym.spaces.Discrete(5),gym.spaces.Discrete(5)]))
+        #self.observation_space = spaces.Tuple(tuple([spaces.Discrete(30) * self.m * 5,spaces.Discrete(30) * self.m * 5, spaces.Discrete(30) * self.m * 5, spaces.Discrete(30) * self.m * 5]))
+        # f = gym.spaces.Discrete(30)
+        # self.observation_space = gym.spaces.Tuple(tuple([f]*self.m*5) * 4)
+        # low = np.array([-5, -5, -5, -5, -5])
+        # high = -np.array([-5, -5, -5, -5, -5])
+        low = np.zeros(5 * self.m)
+        high = np.ones(5 * self.m)*30
+        print(low)
+        print(high)
+        self.observation_space = gym.spaces.Tuple([gym.spaces.Box(low, high, dtype=np.float32)]*4)
+        print("OBS SPACE")
+        print(self.observation_space)
+        # print(obs_space)
 
     # createAgent : Create agent objects (agentNum,IL,OO,c_h,c_p,type,config)
     def createAgent(self): 	
@@ -238,7 +269,7 @@ class BeerGame(gym.Env):
       leadTimeIn = random.randint(self.config.leadRecItemLow[self.config.NoAgent-1], self.config.leadRecItemUp[self.config.NoAgent-1]) 
       
       # handle the most upstream recieved shipment
-      self.players[self.config.NoAgent-1].AS[self.curTime + leadTimeIn] += self.players[self.config.NoAgent-1].actionValue(self.curTime, self.playType)
+      self.players[self.config.NoAgent-1].AS[self.curTime + leadTimeIn] += self.players[self.config.NoAgent-1].actionValue(self.curTime, self.playType, BS=True)
 
       for k in range(self.config.NoAgent-1,-1,-1): # [3,2,1,0]
         
@@ -280,24 +311,34 @@ class BeerGame(gym.Env):
       leadTime = random.randint(self.config.leadRecOrderLow[0], self.config.leadRecOrderUp[0])
 
       # set AO
+      BS = False
       self.players[0].AO[self.curTime] += self.demand[self.curTime]
       for k in range(0,self.config.NoAgent): 
       
         if k == 0:
           self.players[k].action = np.zeros(5)#self.config.actionListLenOpt)
-          a = int(max(0, (action[k] - 2) + self.players[k].AO[self.curTime]))
-          self.players[k].action[a] = 1
+          # a = int(max(0, (action[k] - 0) + self.players[k].AO[self.curTime]))
+          # if self.test_mode:
+          #   print(action, self.test_mode)
+          
+          self.players[k].action[action[0]] = 1
+          BS = False
+          # a = max(0,self.config.actionList[np.argmax(self.action)] * self.config.action_step + self.AO[curTime])
         else:
           self.getAction(k)
+          BS = True
         
         # self.players[k].srdqnBaseStock += [self.players[k].actionValue( \
         #   self.curTime, self.playType) + self.players[k].IL + self.players[k].OO]
         
         # updates OO and AO at time t+1
-        self.players[k].OO += self.players[k].actionValue(self.curTime, self.playType) # open order level update
+        self.players[k].OO += self.players[k].actionValue(self.curTime, self.playType, BS=BS) # open order level update
         leadTime = random.randint(self.config.leadRecOrderLow[k], self.config.leadRecOrderUp[k])
         if self.players[k].agentNum < self.config.NoAgent-1:
-          self.players[k+1].AO[self.curTime + leadTime] += self.players[k].actionValue(self.curTime, self.playType) # open order level update
+          if k == 0:
+            self.players[k+1].AO[self.curTime + leadTime] += self.players[k].actionValue(self.curTime, self.playType, BS=False) # open order level update
+          else:
+            self.players[k+1].AO[self.curTime + leadTime] += self.players[k].actionValue(self.curTime, self.playType, BS=True) # open order level update
 
 
 
@@ -427,9 +468,15 @@ class BeerGame(gym.Env):
             self.deques[i]['AO'].appendleft(int(curState[4]))
 
         # return entire m observations
+        obs = [[],[],[],[]]
         for i in range(self.n_agents):
           spaces = {}
           for j in range(self.m):
+              obs[i].append(self.deques[i]['current_stock_minus'][j])
+              obs[i].append(self.deques[i]['current_stock_plus'][j])
+              obs[i].append(self.deques[i]['OO'][j])
+              obs[i].append(self.deques[i]['AS'][j])
+              obs[i].append(self.deques[i]['AO'][j])
               spaces[f'current_stock_minus{j}'] = self.deques[i]['current_stock_minus'][j]
               spaces[f'current_stock_plus{j}'] = self.deques[i]['current_stock_plus'][j]
               spaces[f'OO{j}'] = self.deques[i]['OO'][j]
@@ -438,7 +485,7 @@ class BeerGame(gym.Env):
           
           observations[i] = spaces
       
-        return observations #self._get_observations()
+        return obs#observations #self._get_observations()
 
     def render(self, mode='human'):
         if mode != 'human':
@@ -484,10 +531,16 @@ class BeerGame(gym.Env):
                 self.deques[i]['AO'].appendleft(int(curState[4]))
 
             # return entire m observations
+            obs = [[],[],[],[]]
             observations = [None] * self.n_agents
             for i in range(self.n_agents):
               spaces = {}
               for j in range(self.m):
+                  obs[i].append(self.deques[i]['current_stock_minus'][j])
+                  obs[i].append(self.deques[i]['current_stock_plus'][j])
+                  obs[i].append(self.deques[i]['OO'][j])
+                  obs[i].append(self.deques[i]['AS'][j])
+                  obs[i].append(self.deques[i]['AO'][j])
                   spaces[f'current_stock_minus{j}'] = self.deques[i]['current_stock_minus'][j]
                   spaces[f'current_stock_plus{j}'] = self.deques[i]['current_stock_plus'][j]
                   spaces[f'OO{j}'] = self.deques[i]['OO'][j]
@@ -496,7 +549,7 @@ class BeerGame(gym.Env):
               
               observations[i] = spaces          
             
-            state = observations #self._get_observations()
+            state = obs#observations #self._get_observations()
             return state, rewards, self.done, {}
         else:
             
@@ -511,10 +564,16 @@ class BeerGame(gym.Env):
             
             # print(curState[0],curState[1],curState[2],curState[3],curState[4])
             # # return entire m observations
+            obs = [[],[],[],[]]
             observations = [None] * self.n_agents
             for i in range(self.n_agents):
               spaces = {}
               for j in range(self.m):
+                  obs[i].append(self.deques[i]['current_stock_minus'][j])
+                  obs[i].append(self.deques[i]['current_stock_plus'][j])
+                  obs[i].append(self.deques[i]['OO'][j])
+                  obs[i].append(self.deques[i]['AS'][j])
+                  obs[i].append(self.deques[i]['AO'][j])
                   spaces[f'current_stock_minus{j}'] = self.deques[i]['current_stock_minus'][j]
                   spaces[f'current_stock_plus{j}'] = self.deques[i]['current_stock_plus'][j]
                   spaces[f'OO{j}'] = self.deques[i]['OO'][j]
@@ -527,7 +586,8 @@ class BeerGame(gym.Env):
               self.players[i].getReward()
             rewards = [1*self.players[i].curReward for i in range(0,self.config.NoAgent)]
             self.done = [False] * 4
-            state = observations #self._get_observations()
+            # print(obs, self.test_mode)
+            state = obs#observations #self._get_observations()
             # todo flatten observation dict
             #state = FlattenObservation(state)
             return state, rewards, self.done, {}
