@@ -185,7 +185,7 @@ class BeerGame(gym.Env):
 
         # dict_space = gym.spaces.Dict(ob_spaces)
         # self.observation_space = gym.spaces.Tuple(tuple([dict_space] * 4))
-        x = [150, 150, 50, 5, 5]
+        x = [150, 150, 70, 15, 15]
         oob = []
         for _ in range(self.m):
           for ii in range(len(x)):
