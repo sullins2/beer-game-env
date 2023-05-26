@@ -117,7 +117,7 @@ class Agent(object):
 class BeerGame(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, n_agents=4, env_type='classical', n_turns_per_game=100,
+    def __init__(self, n_agents=4, env_type='classical', n_turns_per_game=30,
                  add_noise_initialization=False, seed=None, test_mode=False):
         super().__init__()
         c = Config()
@@ -154,15 +154,6 @@ class BeerGame(gym.Env):
         self.action_space = gym.spaces.Tuple(tuple([gym.spaces.Discrete(5),gym.spaces.Discrete(5),gym.spaces.Discrete(5),gym.spaces.Discrete(5)]))
 
         # Create observation space = m
-        # spaces = {}
-        # for i in range(self.m):
-        #     spaces[f'current_stock_minus{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([30]), shape=(1,))
-        #     spaces[f'current_stock_plus{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([30]), shape=(1,))
-        #     spaces[f'OO{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([20]), shape=(1,))
-        #     spaces[f'AS{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([5]), shape=(1,))
-        #     spaces[f'AO{i}'] = gym.spaces.Box(low=np.array([0]), high=np.array([5]), shape=(1,))
-        
-        # Create observation space = m
         ob_spaces = {}
         for i in range(self.m):
             ob_spaces[f'current_stock_minus{i}'] = spaces.Discrete(5)
@@ -172,19 +163,7 @@ class BeerGame(gym.Env):
             ob_spaces[f'AO{i}'] = spaces.Discrete(5)
         
 
-        # print(spaces)
-        # self.deques = []
-        # for i in range(self.n_agents):
-        #   deques = {}
-        #   deques[f'current_stock_minus'] = deque([0.0] * self.m, maxlen=self.m)
-        #   deques[f'current_stock_plus'] = deque([0.0] * self.m, maxlen=self.m)
-        #   deques[f'OO'] = deque([0] * self.m, maxlen=self.m)
-        #   deques[f'AS'] = deque([0] * self.m, maxlen=self.m)
-        #   deques[f'AO'] = deque([0] * self.m, maxlen=self.m)
-        #   self.deques.append(deques)
-
-        # dict_space = gym.spaces.Dict(ob_spaces)
-        # self.observation_space = gym.spaces.Tuple(tuple([dict_space] * 4))
+        # Define the observation space, x holds the size of each part of the state
         x = [150, 150, 70, 15, 15]
         oob = []
         for _ in range(self.m):
@@ -192,70 +171,10 @@ class BeerGame(gym.Env):
             oob.append(x[ii])
         self.observation_space = gym.spaces.Tuple(tuple([spaces.MultiDiscrete(oob)] * 4))
 
-        # obs_space = [30 for _ in range(self.m*5*4)]
-        # obs_space = [(0, 30) for _ in range(self.m*5*4)]
-        # obs_space = []
-        # for x in range(self.m*5):
-        #   obs_space.append(gym.spaces.Discrete(30))
-        # self.observation_space = gym.spaces.Tuple(tuple([obs_space,obs_space,obs_space,obs_space]))
-        # spaces.MultiDiscrete([30,30,30,30,30])
-        # self.observation_space = gym.spaces.Tuple(tuple([gym.spaces.Discrete(5),gym.spaces.Discrete(5),gym.spaces.Discrete(5),gym.spaces.Discrete(5)]))
-        #self.observation_space = spaces.Tuple(tuple([spaces.Discrete(30) * self.m * 5,spaces.Discrete(30) * self.m * 5, spaces.Discrete(30) * self.m * 5, spaces.Discrete(30) * self.m * 5]))
-        # f = gym.spaces.Discrete(30)
-        # self.observation_space = gym.spaces.Tuple(tuple([f]*self.m*5) * 4)
-        # low = np.array([-5, -5, -5, -5, -5])
-        # high = -np.array([-5, -5, -5, -5, -5])
-        # low = np.zeros(5 * self.m)
-        # high = np.ones(5 * self.m)*100
-        # print(low)
-        # print(high)
-        # r = [gym.spaces.Discrete(100),gym.spaces.Discrete(100),gym.spaces.Discrete(100),gym.spaces.Discrete(100),gym.spaces.Discrete(100)]
-        # self.observation_space = gym.spaces.Tuple([gym.spaces.Box(low, high, dtype=np.float32)]*4)
-        # self.observation_space = []
-        # for ii in range(4):
-        #   self.observation_space.append(r)
-        # self.observation_space = gym.spaces.Tuple(tuple(self.observation_space))
-        # self.observation_space = r*4
-        # os = gym.spaces.MultiDiscrete([100,100,100,100,100])
-        # self.observation_space = gym.spaces.Tuple(tuple([os] * 4))
-        
-        # x = [gym.spaces.Discrete(5),
-        #                       gym.spaces.Discrete(5),
-        #                       gym.spaces.Discrete(5),
-        #                       gym.spaces.Discrete(5),
-        #                       gym.spaces.Discrete(5)]
-        # x = []
-        # for _ in range(1):
-        #   for _ in range(5):
-        #     x.append(gym.spaces.Discrete(30))
-
-
-        # # self.observation_space = gym.spaces.Tuple(tuple([self._get_ob()] * 4))
-        # self.observation_space = gym.spaces.Tuple(x * 4)
-
-        # self.observation_space = gym.spaces.Tuple(tuple([self._get_ob] * 4))
-
-        # sa_action_space = [100, 100, 10, 10, 10]
-        # if len(sa_action_space) == 1:
-        #     sa_action_space = spaces.Discrete(sa_action_space[0])
-        # else:
-        #     sa_action_space = spaces.MultiDiscrete(sa_action_space)
-        # self.observation_space = spaces.Tuple(spaces.Discrete(5)) #spaces.Tuple(tuple(4 * [sa_action_space]))
-        # self._obs_length = 5
-
-
-        # self.observation_space = [spaces.MultiDiscrete([100,100,11,11,11]),spaces.MultiDiscrete([100,100,11,11,11]),spaces.MultiDiscrete([100,100,11,11,11]),spaces.MultiDiscrete([100,100,11,11,11])]
-        print("OBS SPACE")
+        print("Observation space:")
         print(self.observation_space)
-        # print(obs_space)
 
-    def _get_ob(self):
-      obs = []
-      for _ in range(5):
-        obs.append(spaces.Discrete(101))  # Values from 0 to 100 (inclusive)
-      return obs
-      # return gym.spaces.Tuple([gym.spaces.Discrete(100),gym.spaces.Discrete(100),gym.spaces.Discrete(100),gym.spaces.Discrete(100),gym.spaces.Discrete(100)])
-
+    
     # createAgent : Create agent objects (agentNum,IL,OO,c_h,c_p,type,config)
     def createAgent(self): 	
       agentTypes = self.config.agentTypes 
@@ -309,8 +228,7 @@ class BeerGame(gym.Env):
 
     def getAction(self, k):
       self.players[k].action = np.zeros(self.config.actionListLenOpt)
-      
-      # print(self.players[k].action)	
+      	
       if self.config.demandDistribution == 2:
         if self.curTime   and self.config.use_initial_BS <= 4:
           self.players[k].action [np.argmin(np.abs(np.array(self.config.actionListOpt)-\
@@ -321,8 +239,7 @@ class BeerGame(gym.Env):
       else:
         self.players[k].action [np.argmin(np.abs(np.array(self.config.actionListOpt)-\
               max(0,(self.players[k].bsBaseStock - (self.players[k].IL + self.players[k].OO - self.players[k].AO[self.curTime]))) ))] = 1	
-      # print(self.players[k].action)	
-
+      
 
     def next(self):
       # get a random leadtime		
@@ -376,14 +293,9 @@ class BeerGame(gym.Env):
       for k in range(0,self.config.NoAgent): 
       
         if k == 0:
-          self.players[k].action = np.zeros(5)#self.config.actionListLenOpt)
-          # a = int(max(0, (action[k] - 0) + self.players[k].AO[self.curTime]))
-          # if self.test_mode:
-          #   print(action, self.test_mode)
-          
+          self.players[k].action = np.zeros(5) #self.config.actionListLenOpt)
           self.players[k].action[action[0]] = 1
           BS = False
-          # a = max(0,self.config.actionList[np.argmax(self.action)] * self.config.action_step + self.AO[curTime])
         else:
           self.getAction(k)
           BS = True
@@ -480,6 +392,8 @@ class BeerGame(gym.Env):
                                'OO': int(curState[2]), 
                                'AS': int(curState[3]), 
                                'AO': int(curState[4])}
+        for _ in range(1000):
+          print("Shouldn't be called _get_observations in env.py")
         return observations
 
     def seed(self, seed=None):
@@ -487,18 +401,13 @@ class BeerGame(gym.Env):
         return [seed]
 
     
-    # TODO: Incorporate testing here
     def reset(self):
         if self.test_mode:
           demand = self.test_deq.popleft()
-          # print("Test:", demand)
-          # print("test")
           # Reset test demands for next tests
           if not self.test_deq:
-            # print("reset")
             self.init_test_demand()
         else:
-          #self.init_test_demand() # added so that it resets for next test without commenting out unused that will be left over
           demand = [random.randint(0, 2) for _ in range(102)] 
           
         # This resets self.deque
@@ -537,17 +446,16 @@ class BeerGame(gym.Env):
               obs[i].append(self.deques[i]['OO'][j])
               obs[i].append(self.deques[i]['AS'][j])
               obs[i].append(self.deques[i]['AO'][j])
-              spaces[f'current_stock_minus{j}'] = self.deques[i]['current_stock_minus'][j]
-              spaces[f'current_stock_plus{j}'] = self.deques[i]['current_stock_plus'][j]
-              spaces[f'OO{j}'] = self.deques[i]['OO'][j]
-              spaces[f'AS{j}'] = self.deques[i]['AS'][j]
-              spaces[f'AO{j}'] = self.deques[i]['AO'][j]
+              # spaces[f'current_stock_minus{j}'] = self.deques[i]['current_stock_minus'][j]
+              # spaces[f'current_stock_plus{j}'] = self.deques[i]['current_stock_plus'][j]
+              # spaces[f'OO{j}'] = self.deques[i]['OO'][j]
+              # spaces[f'AS{j}'] = self.deques[i]['AS'][j]
+              # spaces[f'AO{j}'] = self.deques[i]['AO'][j]
           
-          observations[i] = spaces
+          # observations[i] = spaces
       
         obs_array = np.array([np.array(row) for row in obs])
-        # print("E",obs_array)
-        return obs_array#observations #self._get_observations()
+        return obs_array #observations #self._get_observations()
 
     def render(self, mode='human'):
         if mode != 'human':
@@ -603,16 +511,16 @@ class BeerGame(gym.Env):
                   obs[i].append(self.deques[i]['OO'][j])
                   obs[i].append(self.deques[i]['AS'][j])
                   obs[i].append(self.deques[i]['AO'][j])
-                  spaces[f'current_stock_minus{j}'] = self.deques[i]['current_stock_minus'][j]
-                  spaces[f'current_stock_plus{j}'] = self.deques[i]['current_stock_plus'][j]
-                  spaces[f'OO{j}'] = self.deques[i]['OO'][j]
-                  spaces[f'AS{j}'] = self.deques[i]['AS'][j]
-                  spaces[f'AO{j}'] = self.deques[i]['AO'][j]
+                  # spaces[f'current_stock_minus{j}'] = self.deques[i]['current_stock_minus'][j]
+                  # spaces[f'current_stock_plus{j}'] = self.deques[i]['current_stock_plus'][j]
+                  # spaces[f'OO{j}'] = self.deques[i]['OO'][j]
+                  # spaces[f'AS{j}'] = self.deques[i]['AS'][j]
+                  # spaces[f'AO{j}'] = self.deques[i]['AO'][j]
               
-              observations[i] = spaces          
+              # observations[i] = spaces          
             
             obs_array = np.array([np.array(row) for row in obs])
-            state = obs_array#observations #self._get_observations()
+            state = obs_array #observations #self._get_observations()
             return state, rewards, self.done, {}
         else:
             
@@ -625,7 +533,6 @@ class BeerGame(gym.Env):
                 self.deques[i]['AS'].appendleft(int(curState[3]))
                 self.deques[i]['AO'].appendleft(int(curState[4]))
             
-            # print(curState[0],curState[1],curState[2],curState[3],curState[4])
             # # return entire m observations
             obs = [[],[],[],[]]
             observations = [None] * self.n_agents
@@ -637,23 +544,20 @@ class BeerGame(gym.Env):
                   obs[i].append(self.deques[i]['OO'][j])
                   obs[i].append(self.deques[i]['AS'][j])
                   obs[i].append(self.deques[i]['AO'][j])
-                  spaces[f'current_stock_minus{j}'] = self.deques[i]['current_stock_minus'][j]
-                  spaces[f'current_stock_plus{j}'] = self.deques[i]['current_stock_plus'][j]
-                  spaces[f'OO{j}'] = self.deques[i]['OO'][j]
-                  spaces[f'AS{j}'] = self.deques[i]['AS'][j]
-                  spaces[f'AO{j}'] = self.deques[i]['AO'][j]
+                  # spaces[f'current_stock_minus{j}'] = self.deques[i]['current_stock_minus'][j]
+                  # spaces[f'current_stock_plus{j}'] = self.deques[i]['current_stock_plus'][j]
+                  # spaces[f'OO{j}'] = self.deques[i]['OO'][j]
+                  # spaces[f'AS{j}'] = self.deques[i]['AS'][j]
+                  # spaces[f'AO{j}'] = self.deques[i]['AO'][j]
               
-              observations[i] = spaces
+              # observations[i] = spaces
 
             for i in range(self.n_agents):
               self.players[i].getReward()
             rewards = [1*self.players[i].curReward for i in range(0,self.config.NoAgent)]
             self.done = [False] * 4
-            # print(obs, self.test_mode)
             obs_array = np.array([np.array(row) for row in obs])
-            state = obs_array#observations #self._get_observations()
-            # todo flatten observation dict
-            #state = FlattenObservation(state)
+            state = obs_array #observations #self._get_observations()
             return state, rewards, self.done, {}
 
     def init_test_demand(self):
@@ -1167,7 +1071,6 @@ class Config(object):
     self.set_sterman_parameters(config)
 
     return config
-
 
 
 
