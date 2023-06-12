@@ -9,6 +9,15 @@ import numpy as np
 from gym.wrappers import FilterObservation
 import random
 
+
+##################
+# SET K = 0 IN TWO SPOTS
+# CHECK length = 40
+# Chem m = 10
+# Check observations are positive (for stockout)
+# Check multidiscrete is high enough
+#############
+
 from numpy.core.multiarray import datetime_as_string
 from numpy.core.numeric import ones
 
@@ -90,7 +99,7 @@ class Agent(object):
     # cost (holding + backorder) for one time unit
     self.curReward= (self.c_p * max(0,-self.IL) + self.c_h * max(0,self.IL))/200.0 # self.config.Ttest # 
     self.curReward = -self.curReward;		# make reward negative, because it is the cost
-    
+   
     # sum total reward of each agent
     self.cumReward = self.config.gamma*self.cumReward + self.curReward		
 
@@ -98,11 +107,11 @@ class Agent(object):
   def getCurState(self,t):
     if self.config.ifUseASAO:
       if self.config.if_use_AS_t_plus_1:
-        curState= np.array([-1*(self.IL<0)*self.IL,1*(self.IL>0)*self.IL,self.OO,self.AS[t],self.AO[t]])
+        curState= np.array([1*(self.IL<0)*self.IL,1*(self.IL>0)*self.IL,self.OO,self.AS[t],self.AO[t]])
       else:
-        curState= np.array([-1*(self.IL<0)*self.IL,1*(self.IL>0)*self.IL,self.OO,self.AS[t-1],self.AO[t]])
+        curState= np.array([1*(self.IL<0)*self.IL,1*(self.IL>0)*self.IL,self.OO,self.AS[t-1],self.AO[t]])
     else:
-      curState= np.array([-1*(self.IL<0)*self.IL,1*(self.IL>0)*self.IL,self.OO])
+      curState= np.array([1*(self.IL<0)*self.IL,1*(self.IL>0)*self.IL,self.OO])
 
     if self.config.ifUseActionInD:
       a = self.config.actionList[np.argmax(self.action)]
@@ -164,7 +173,7 @@ class BeerGame(gym.Env):
         
 
         # Define the observation space, x holds the size of each part of the state
-        x = [150, 150, 70, 15, 15]
+        x = [750, 750, 170, 45, 45]
         oob = []
         for _ in range(self.m):
           for ii in range(len(x)):
@@ -299,7 +308,7 @@ class BeerGame(gym.Env):
         else:
           self.getAction(k)
           BS = True
-        
+     
         # self.players[k].srdqnBaseStock += [self.players[k].actionValue( \
         #   self.curTime, self.playType) + self.players[k].IL + self.players[k].OO]
         
