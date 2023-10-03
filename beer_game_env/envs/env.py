@@ -126,7 +126,7 @@ class Agent(object):
 class BeerGame(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, n_agents=4, env_type='classical', n_turns_per_game=20,
+    def __init__(self, n_agents=4, env_type='classical', n_turns_per_game=25,
                  add_noise_initialization=False, seed=None, test_mode=False):
         super().__init__()
         c = Config()
@@ -303,7 +303,9 @@ class BeerGame(gym.Env):
       
         if k >= 0:
           self.players[k].action = np.zeros(5) #self.config.actionListLenOpt)
-          self.players[k].action[action[0]] = 1
+	  r = random.randint(0, 4)
+	  self.players[k].action[r] = 1
+          # self.players[k].action[action[0]] = 1
           BS = False
         else:
           self.getAction(k)
