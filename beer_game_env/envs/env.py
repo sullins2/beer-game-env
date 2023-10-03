@@ -303,7 +303,7 @@ class BeerGame(gym.Env):
       
         if k >= 0:
           self.players[k].action = np.zeros(5) #self.config.actionListLenOpt)
-	  r = random.randint(0, 4)
+          r = random.randint(0, 4)
 	  self.players[k].action[r] = 1
           # self.players[k].action[action[0]] = 1
           BS = False
