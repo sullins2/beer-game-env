@@ -126,7 +126,7 @@ class Agent(object):
 class BeerGame(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, n_agents=4, env_type='classical', n_turns_per_game=100,
+    def __init__(self, n_agents=4, env_type='classical', n_turns_per_game=25,
                  add_noise_initialization=False, seed=None, test_mode=False):
         super().__init__()
         c = Config()
@@ -301,7 +301,7 @@ class BeerGame(gym.Env):
       self.players[0].AO[self.curTime] += self.demand[self.curTime]
       for k in range(0,self.config.NoAgent): 
       
-        if k == 0:
+        if k >= 0:
           self.players[k].action = np.zeros(5) #self.config.actionListLenOpt)
           self.players[k].action[action[0]] = 1
           BS = False
@@ -316,7 +316,7 @@ class BeerGame(gym.Env):
         self.players[k].OO += self.players[k].actionValue(self.curTime, self.playType, BS=BS) # open order level update
         leadTime = random.randint(self.config.leadRecOrderLow[k], self.config.leadRecOrderUp[k])
         if self.players[k].agentNum < self.config.NoAgent-1:
-          if k == 0:
+          if k >= 0:
             self.players[k+1].AO[self.curTime + leadTime] += self.players[k].actionValue(self.curTime, self.playType, BS=False) # open order level update
           else:
             self.players[k+1].AO[self.curTime + leadTime] += self.players[k].actionValue(self.curTime, self.playType, BS=True) # open order level update
